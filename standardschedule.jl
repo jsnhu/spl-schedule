@@ -3,6 +3,11 @@ using JuMP, GLPKMathProgInterface, DataFrames, Taro
 # import the preference matrix from excel spreadsheet C4:S11
 Taro.init()
 pref_df = DataFrame(Taro.readxl("normal-pref-1.xlsx", "Sheet1", "C3:S11"))
+#= Note:
+Taro.readxl should return a DataFrame, but it returns an array of
+namedtuples instead for some reason;
+Also, Taro 0-indexes the spreadsheet
+=#
 
 # convert to integer matrix
 pref_matrix = Array{Int64}(Matrix(pref_df))
@@ -61,17 +66,17 @@ for i in 1:staff
     @constraint(m,  sum( x[i,j] for j = [5,16,17]) <= 1)    # Sun
 end
 
-print(m)
+# print(m)
 
 status = solve(m)
 
 println("Objective value: ", getobjectivevalue(m))
-println("x = ", getvalue(x))
-m = Array{Int64}(getvalue(x))
+assn_matrix = Array{Int64}(getvalue(x))
 
+# print assignments (put into DataFrame later)
 for i in 1:staff
     for j in 1:shifts
-        if m[i,j] == 1
+        if assn_matrix[i,j] == 1
             println("Emp: ", i, " Shift: ", j, " Score: ", pref_matrix[i,j])
         end
     end
