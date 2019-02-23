@@ -2,7 +2,7 @@ using JuMP, GLPKMathProgInterface, DataFrames, Taro
 
 # import the preference matrix from excel spreadsheet C4:S11
 Taro.init()
-pref_df = DataFrame(Taro.readxl("C:/Users/Jason/Desktop/Julia/SPL Scheduling/normal-pref-1.xlsx", "Sheet1", "C3:S11"))
+pref_df = DataFrame(Taro.readxl("normal-pref-1.xlsx", "Sheet1", "C3:S11"))
 
 # convert to integer matrix
 pref_matrix = Array{Int64}(Matrix(pref_df))
