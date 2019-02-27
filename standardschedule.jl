@@ -72,6 +72,7 @@ status = solve(m)
 println("Objective value: ", getobjectivevalue(m))
 assn_matrix = Array{Int64}(getvalue(x))
 
+assn_df = DataFrame(Employee = Int[], Shift = Int[], Score = Int[])
 
 # print assignments
 for i in 1:staff
