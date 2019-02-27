@@ -2,11 +2,10 @@ using JuMP, GLPKMathProgInterface, DataFrames, Taro
 
 # import the preference matrix from excel spreadsheet C4:S11
 Taro.init()
-pref_df = DataFrame(Taro.readxl("normal-pref-1.xlsx", "Sheet1", "C3:S11"))
+pref_df = DataFrame(Taro.readxl("normal-pref-1.xlsx", "Sheet1", "C4:S11", header = false))
 #= Note:
 Taro.readxl should return a DataFrame, but it returns an array of
-namedtuples instead for some reason;
-Also, Taro 0-indexes the spreadsheet
+namedtuples instead for some reason
 =#
 
 # convert to integer matrix
@@ -73,11 +72,13 @@ status = solve(m)
 println("Objective value: ", getobjectivevalue(m))
 assn_matrix = Array{Int64}(getvalue(x))
 
-# print assignments (put into DataFrame later)
+
+# print assignments
 for i in 1:staff
     for j in 1:shifts
         if assn_matrix[i,j] == 1
             println("Emp: ", i, " Shift: ", j, " Score: ", pref_matrix[i,j])
+            push!(assn_df, (i, j, pref_matrix[i,j]))
         end
     end
 end
