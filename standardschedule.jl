@@ -11,14 +11,15 @@ namedtuples instead for some reason
 # convert to integer matrix
 pref_matrix = Array{Int64}(Matrix(pref_df))
 
-staff = size(pref_matrix)[1]    # get number of staff and shifts
+# get number of staff and shifts
+staff = size(pref_matrix)[1]
 shifts = size(pref_matrix)[2]
 
 # optimization model
 m = Model(solver = GLPKSolverMIP())
 
 # 8x17 binary assignment matrix
-# 1 - employee i assigned to shift j, 0 otherwise
+# 1 if employee i assigned to shift j, 0 otherwise
 @variable(m, x[1:staff, 1:shifts], Bin)
 
 # maximize preference score sum
@@ -72,14 +73,16 @@ status = solve(m)
 println("Objective value: ", getobjectivevalue(m))
 assn_matrix = Array{Int64}(getvalue(x))
 
+# create dataframe and add rows
 assn_df = DataFrame(Employee = Int[], Shift = Int[], Score = Int[])
 
-# print assignments
 for i in 1:staff
     for j in 1:shifts
         if assn_matrix[i,j] == 1
-            println("Emp: ", i, " Shift: ", j, " Score: ", pref_matrix[i,j])
             push!(assn_df, (i, j, pref_matrix[i,j]))
         end
     end
 end
+
+# print assignments
+show(assn_df, allrows = true)
