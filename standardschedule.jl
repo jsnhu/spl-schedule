@@ -1,12 +1,55 @@
 using JuMP, GLPKMathProgInterface, DataFrames, Taro
 
-# import the preference matrix from excel spreadsheet C4:S11
 Taro.init()
-pref_df = DataFrame(Taro.readxl("normal-pref-1.xlsx", "Sheet1", "C4:S11", header = false))
+
+# get staff, shift, preference tables
+staff_df = DataFrame(Taro.readxl("table.xlsx", "Dictionary", "A2:C10"))
+shift_df = DataFrame(Taro.readxl("table.xlsx", "Dictionary", "D2:G19"))
+pref_df  = DataFrame(Taro.readxl("table.xlsx", "PrefMatrix", "A1:Q8", header = false))
 #= Note:
-Taro.readxl should return a DataFrame, but it returns an array of
+Taro.readxl should return a DataFrame,
+but it returns an array of
 namedtuples instead for some reason
 =#
+
+# categorize staff by their type
+both_staff = []
+desk_staff = []
+shel_staff = []
+
+for k in 1:size(staff_df,1)
+    if staff_df[k,:Type] == "both"
+        push!(both_staff,k)
+    elseif staff_df[k,:Type] == "desk"
+        push!(desk_staff,k)
+    else
+        push!(shel_staff,k)
+    end
+end
+
+# categorize shifts by their day of the week
+
+
+# categorize shifts by their type
+
+
+
+for x in 1:size(staff_df, 1)
+    if staff_df[x,3] === "both"
+        push!(both_staff,x)
+    elseif staff_df[x,3] === "desk"
+        push!(desk_staff,x)
+    else
+        push!(shel_staff,x)
+    end
+end
+
+
+
+
+
+
+
 
 # convert to integer matrix
 pref_matrix = Array{Int64}(Matrix(pref_df))
