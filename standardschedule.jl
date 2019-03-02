@@ -91,32 +91,32 @@ for j in 1:shift
     @constraint(m, sum( x[i,j] for i in 1:staff) == 1)
 end
 
-#cons2: maximum 4 shifts per week per person
+# cons2: maximum 4 shifts per week per person
 for i in 1:staff
     @constraint(m, sum( x[i,j] for j in 1:shift) <= 4)
 end
 
-#cons2.5: minimum 1 shift per week per person
+# cons3: minimum 1 shift per week per person
 for i in 1:staff
     @constraint(m, sum( x[i,j] for j in 1:shift) >= 1)
 end
 
-#cons3: no employee works both Saturday and Sunday in one weekend
+# cons4: no employee works both Saturday and Sunday in one weekend
 for i in 1:staff
     @constraint(m, sum( x[i,j] for j in union(sat_shift,sun_shift)) <= 1)
 end
 
-#cons4: desk employees cannot work shelving shifts
+# cons5: desk employees cannot work shelving shifts
 for i in desk_staff
     @constraint(m, sum( x[i,j] for j in shel_shift) == 0)
 end
 
-#cons5: shelving employees cannot work desk shifts
+# cons6: shelving employees cannot work desk shifts
 for i in shel_staff
     @constraint(m, sum( x[i,j] for j in desk_shift) == 0)
 end
 
-#cons6: nobody works two shifts in one day:
+# cons7: nobody works two shifts in one day:
 for i in 1:staff
     @constraint(m,  sum( x[i,j] for j in mon_shift) <= 1)
     @constraint(m,  sum( x[i,j] for j in tue_shift) <= 1)
