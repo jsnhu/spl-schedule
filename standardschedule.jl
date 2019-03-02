@@ -96,7 +96,7 @@ for i in 1:staff
     @constraint(m, sum( x[i,j] for j in 1:shift) <= 4)
 end
 
-#cons2.1: minimum 1 shift per week per person
+#cons2.5: minimum 1 shift per week per person
 for i in 1:staff
     @constraint(m, sum( x[i,j] for j in 1:shift) >= 1)
 end
@@ -137,6 +137,7 @@ assn_matrix = Array{Int64}(getvalue(x))
 # create dataframe and add rows
 assn_df = DataFrame(Employee = Int[], Shift = Int[], Score = Int[])
 
+# read all assigned shifts
 for i in 1:staff
     for j in 1:shift
         if assn_matrix[i,j] == 1
