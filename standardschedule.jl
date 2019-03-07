@@ -158,10 +158,3 @@ end
 
 # print assignments
 show(assn_df, allrows = true)
-
-w=Workbook("table.xlsx")
-s=getSheet(w, "AssnMatrix")
-r=createRow(s, 1)
-c=createCell(r, 1); setCellValue(c, "A String")
-c=createCell(r, 2); setCellValue(c, 25)
-c=createCell(r, 3); setCellValue(c, 2.5)
