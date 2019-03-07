@@ -2,10 +2,20 @@ using JuMP, GLPKMathProgInterface, DataFrames, Taro
 
 Taro.init()
 
+# obtain keys (bottom right corner of cell range to read)
+staff_cell = getCell(getRow(getSheet(Workbook("table.xlsx"), "Keys"),1),1)
+shift_cell = getCell(getRow(getSheet(Workbook("table.xlsx"), "Keys"),2),1)
+pref_cell = getCell(getRow(getSheet(Workbook("table.xlsx"), "Keys"),3),1)
+
+staff_key = string("A2:", getCellValue(staff_cell))
+shift_key = string("D2:", getCellValue(shift_cell))
+pref_key  = string("A1:", getCellValue(pref_cell))
+
+
 # get staff, shift, preference tables
-staff_df = DataFrame(Taro.readxl("table.xlsx", "Dictionary", "A2:C10"))
-shift_df = DataFrame(Taro.readxl("table.xlsx", "Dictionary", "D2:G19"))
-pref_df  = DataFrame(Taro.readxl("table.xlsx", "PrefMatrix", "A1:Q8", header = false))
+staff_df = DataFrame(Taro.readxl("table.xlsx", "Dictionary", staff_key))
+shift_df = DataFrame(Taro.readxl("table.xlsx", "Dictionary", shift_key))
+pref_df  = DataFrame(Taro.readxl("table.xlsx", "PrefMatrix", pref_key, header = false))
 #= Note:
 Taro.readxl should return a DataFrame,
 but it returns an array of
@@ -101,7 +111,7 @@ for i in 1:staff
     @constraint(m, sum( x[i,j] for j in 1:shift) >= 1)
 end
 
-# cons4: no employee works both Saturday and Sunday in one weekend
+# cons4: no employee works both Sat and Sun in one weekend
 for i in 1:staff
     @constraint(m, sum( x[i,j] for j in union(sat_shift,sun_shift)) <= 1)
 end
@@ -116,7 +126,7 @@ for i in shel_staff
     @constraint(m, sum( x[i,j] for j in desk_shift) == 0)
 end
 
-# cons7: nobody works two shifts in one day:
+# cons7: nobody works 2 shifts (or more) in one day:
 for i in 1:staff
     @constraint(m,  sum( x[i,j] for j in mon_shift) <= 1)
     @constraint(m,  sum( x[i,j] for j in tue_shift) <= 1)
@@ -134,10 +144,10 @@ status = solve(m)
 println("Objective value: ", getobjectivevalue(m))
 assn_matrix = Array{Int64}(getvalue(x))
 
-# create dataframe and add rows
+# create assignment dataframe
 assn_df = DataFrame(Employee = Int[], Shift = Int[], Score = Int[])
 
-# read all assigned shifts
+# read all assigned shifts into dataframe
 for i in 1:staff
     for j in 1:shift
         if assn_matrix[i,j] == 1
