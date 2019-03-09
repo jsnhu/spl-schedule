@@ -3,9 +3,9 @@ using JuMP, GLPKMathProgInterface, DataFrames, Taro
 Taro.init()
 
 # obtain keys (bottom right corner of cell range to read)
-staff_cell = getCell(getRow(getSheet(Workbook("table.xlsx"), "Keys"),1),1)
-shift_cell = getCell(getRow(getSheet(Workbook("table.xlsx"), "Keys"),2),1)
-pref_cell = getCell(getRow(getSheet(Workbook("table.xlsx"), "Keys"),3),1)
+staff_cell  = getCell(getRow(getSheet(Workbook("table.xlsx"), "Keys"),1),1)
+shift_cell  = getCell(getRow(getSheet(Workbook("table.xlsx"), "Keys"),2),1)
+pref_cell   = getCell(getRow(getSheet(Workbook("table.xlsx"), "Keys"),3),1)
 
 staff_key = string("A2:", getCellValue(staff_cell))
 shift_key = string("D2:", getCellValue(shift_cell))
@@ -87,7 +87,7 @@ shift = size(pref_matrix)[2]
 # optimization model
 m = Model(solver = GLPKSolverMIP())
 
-# staff x shifts binary assignment matrix
+# staff x shift binary assignment matrix
 # 1 if employee i assigned to shift j, 0 otherwise
 @variable(m, x[1:staff, 1:shift], Bin)
 
