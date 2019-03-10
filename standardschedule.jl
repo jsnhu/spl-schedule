@@ -145,13 +145,15 @@ println("Objective value: ", getobjectivevalue(m))
 assn_matrix = Array{Int64}(getvalue(x))
 
 # create assignment dataframe
-assn_df = DataFrame(Employee = Int[], Shift = Int[], Score = Int[])
+assn_df = DataFrame(Employee = Int[], Name = String[], Shift = Int[], Day = String[],
+                    Time = String[], Type = String[], Score = Int[])
 
 # read all assigned shifts into dataframe
 for i in 1:staff
     for j in 1:shift
         if assn_matrix[i,j] == 1
-            push!(assn_df, (i, j, pref_matrix[i,j]))
+            push!(assn_df, (i, staff_df[i, :Name], j,
+            shift_df[j, :Day], shift_df[j, :Time], shift_df[j, :Type], pref_matrix[i,j]))
         end
     end
 end
