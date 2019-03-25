@@ -177,7 +177,7 @@ show(assn_df, allrows = true)
 
 # create new workbook with assignment matrix
 w = Workbook()
-s=createSheet(w, "AssnMatrix")
+s = createSheet(w, "AssnMatrix")
 
 for i in 1:staff
     r = createRow(s, i - 1)
