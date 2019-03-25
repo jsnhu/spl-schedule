@@ -2,14 +2,32 @@ using JuMP, GLPKMathProgInterface, DataFrames, Taro
 
 Taro.init()
 
-# obtain keys (bottom right corner of cell range to read)
-staff_cell  = getCell(getRow(getSheet(Workbook("table.xlsx"), "Keys"),1),1)
-shift_cell  = getCell(getRow(getSheet(Workbook("table.xlsx"), "Keys"),2),1)
-pref_cell   = getCell(getRow(getSheet(Workbook("table.xlsx"), "Keys"),3),1)
+# numtocol
+# Integer (>= 1) -> String
+# converts index to Excel col string, e.g. 1 -> A, 27 -> AA
+function numtocol(num)
+    col = ""
+    modulo = 1
+    while num > 0
+        modulo = (num - 1) % 26
+        col =   string(
+                    string(Char(modulo + 65)),
+                    col)
+        num = floor((num - modulo) / 26)
+    end
+    return col
+end
 
-staff_key = string("A2:", getCellValue(staff_cell))
-shift_key = string("D2:", getCellValue(shift_cell))
-pref_key  = string("A1:", getCellValue(pref_cell))
+# get number of staff and shifts from sheet
+staff = Integer(getCellValue(getCell(getRow(getSheet(
+            Workbook("table.xlsx"), "Dictionary"), 0), 0)))
+shift = Integer(getCellValue(getCell(getRow(getSheet(
+            Workbook("table.xlsx"), "Dictionary"), 0), 3)))
+
+# obtain ranges using # staff and shifts (top left stays constant)
+staff_key = string("A2:", "C", staff + 2)
+shift_key = string("D2:", "G", shift + 2)
+pref_key  = string("A1:", numtocol(shift), staff)
 
 
 # get staff, shift, preference tables
@@ -17,9 +35,9 @@ staff_df = DataFrame(Taro.readxl("table.xlsx", "Dictionary", staff_key))
 shift_df = DataFrame(Taro.readxl("table.xlsx", "Dictionary", shift_key))
 pref_df  = DataFrame(Taro.readxl("table.xlsx", "PrefMatrix", pref_key, header = false))
 #= Note:
-Taro.readxl should return a DataFrame,
-but it returns an array of
-namedtuples instead for some reason
+    Taro.readxl should return a DataFrame,
+    but it returns an array of
+    namedtuples instead for some reason
 =#
 
 # categorize staff by their type
@@ -27,13 +45,13 @@ both_staff = Int64[]
 desk_staff = Int64[]
 shel_staff = Int64[]
 
-for k in 1:size(staff_df,1)
-    if staff_df[k,:Type] == "both"
-        push!(both_staff,k)
-    elseif staff_df[k,:Type] == "desk"
-        push!(desk_staff,k)
+for k in 1:size(staff_df, 1)
+    if staff_df[k, :Type] == "both"
+        push!(both_staff, k)
+    elseif staff_df[k, :Type] == "desk"
+        push!(desk_staff, k)
     else
-        push!(shel_staff,k)
+        push!(shel_staff, k)
     end
 end
 
@@ -47,20 +65,20 @@ sat_shift = Int64[]
 sun_shift = Int64[]
 
 for k in 1:size(shift_df,1)
-    if shift_df[k,:Day] == "Mon"
-        push!(mon_shift,k)
-    elseif shift_df[k,:Day] == "Tue"
-        push!(tue_shift,k)
-    elseif shift_df[k,:Day] == "Wed"
-        push!(wed_shift,k)
-    elseif shift_df[k,:Day] == "Thu"
-        push!(thu_shift,k)
-    elseif shift_df[k,:Day] == "Fri"
-        push!(fri_shift,k)
-    elseif shift_df[k,:Day] == "Sat"
-        push!(sat_shift,k)
+    if shift_df[k, :Day] == "Mon"
+        push!(mon_shift, k)
+    elseif shift_df[k, :Day] == "Tue"
+        push!(tue_shift, k)
+    elseif shift_df[k, :Day] == "Wed"
+        push!(wed_shift, k)
+    elseif shift_df[k, :Day] == "Thu"
+        push!(thu_shift, k)
+    elseif shift_df[k, :Day] == "Fri"
+        push!(fri_shift, k)
+    elseif shift_df[k, :Day] == "Sat"
+        push!(sat_shift, k)
     else
-        push!(sun_shift,k)
+        push!(sun_shift, k)
     end
 end
 
@@ -69,20 +87,16 @@ end
 desk_shift = Int64[]
 shel_shift = Int64[]
 
-for k in 1:size(shift_df,1)
-    if shift_df[k,:Type] == "desk"
-        push!(desk_shift,k)
+for k in 1:size(shift_df, 1)
+    if shift_df[k, :Type] == "desk"
+        push!(desk_shift, k)
     else
-        push!(shel_shift,k)
+        push!(shel_shift, k)
     end
 end
 
 # convert pref table to integer matrix
 pref_matrix = Array{Int64}(Matrix(pref_df))
-
-# get number of staff and shifts
-staff = size(pref_matrix)[1]
-shift = size(pref_matrix)[2]
 
 # optimization model
 m = Model(solver = GLPKSolverMIP())
@@ -160,3 +174,17 @@ end
 
 # print assignments
 show(assn_df, allrows = true)
+
+# create new workbook with assignment matrix
+w = Workbook()
+s=createSheet(w, "AssnMatrix")
+
+for i in 1:staff
+    r = createRow(s, i - 1)
+    for j in 1:shift
+        c = createCell(r, j - 1)
+        setCellValue(c, assn_matrix[i, j])
+    end
+end
+
+write("AssnMatrix.xlsx", w)
